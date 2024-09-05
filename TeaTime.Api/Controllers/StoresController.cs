@@ -44,7 +44,7 @@ namespace TeaTime.Api.Controllers
             _context.Stores.Add(newStore);
             _context.SaveChanges();
 
-            return Ok();
+            return CreatedAtAction(nameof(GetStore), new { id = newStore.Id }, newStore);
         }
     }
 }
