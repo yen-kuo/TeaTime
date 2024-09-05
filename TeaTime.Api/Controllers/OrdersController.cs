@@ -8,10 +8,12 @@ namespace TeaTime.Api.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly TeaTimeContext _context;
+        private readonly ILogger<OrdersController> _logger;
 
-        public OrdersController(TeaTimeContext context)
+        public OrdersController(TeaTimeContext context, ILogger<OrdersController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/stores/1/orders
@@ -54,7 +56,8 @@ namespace TeaTime.Api.Controllers
             var store = _context.Stores.Find(storeId);
             if (store is null)
             {
-                return NotFound();
+                _logger.LogWarning("商家代號 {storeId} 不存在，無法新增訂單", storeId);
+                return BadRequest("無法新增訂單，請與維護人員聯繫");
             }
 
             newOrder.StoreId = storeId;
