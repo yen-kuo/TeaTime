@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TeaTime.Api.DataAccess.DbEntities;
 
-namespace TeaTime.Api.Models
+namespace TeaTime.Api.DataAccess
 {
     public class TeaTimeContext : DbContext
     {
@@ -8,8 +9,8 @@ namespace TeaTime.Api.Models
         {
         }
 
-        public DbSet<Store> Stores { get; set; } = null!;
+        public DbSet<StoreEntity> Stores { get; set; } = null!;
 
-        public DbSet<Order> Orders { get; set; } = null!;
+        public DbSet<OrderEntity> Orders { get; set; } = null!;
     }
 }
