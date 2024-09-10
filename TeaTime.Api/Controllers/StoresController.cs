@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using TeaTime.Api.DataAccess;
-using TeaTime.Api.DataAccess.DbEntities;
+using TeaTime.Api.DataAccess.DbEntity;
 using TeaTime.Api.Domain.Stores;
+using TeaTime.Api.Domain.StoresForUser;
+using TeaTime.Api.Service;
 
 namespace TeaTime.Api.Controllers
 {
@@ -9,81 +12,41 @@ namespace TeaTime.Api.Controllers
     [ApiController]
     public class StoresController : ControllerBase
     {
-        private readonly TeaTimeContext _context;
+        private readonly IStoresService _service;
 
-        public StoresController(TeaTimeContext context)
+        public StoresController(IStoresService service)
         {
-            _context = context;
+            _service = service;
         }
 
-        // GET: api/stores
+        // GET: api/Stores
         [HttpGet]
-        public ActionResult<IEnumerable<Store>> GetStores()
+        public ActionResult<IEnumerable<StoreEntity>> GetStores()
         {
-            var results = _context.Stores.ToList();
-
-            var stores = new List<Store>();
-            foreach (var result in results)
-            {
-                stores.Add(new Store
-                {
-                    Id = result.Id,
-                    Name = result.Name,
-                    PhoneNumber = result.PhoneNumber,
-                    MenuUrl = result.MenuUrl
-                });
-            }
+            var stores = _service.GetStores();
 
             return Ok(stores);
         }
 
-        // GET: api/stores/1
+        // GET: api/Stores/1
         [HttpGet("{id}")]
-        public ActionResult<Store> GetStore(long id)
+        public ActionResult<StoreEntity> GetStore(long id)
         {
-            var result = _context.Stores.Find(id);
+            var store = _service.GetStoreAndReturn(id);
 
-            if (result == null)
+            if (store == null)
             {
                 return NotFound();
             }
-
-            var store = new Store
-            {
-                Id = result.Id,
-                Name = result.Name,
-                PhoneNumber = result.PhoneNumber,
-                MenuUrl = result.MenuUrl
-            };
-
             return Ok(store);
         }
 
-        // POST: api/stores
+        // POST: api/Stores
         [HttpPost]
-        public IActionResult AddStore(StoreForCreation newStore)
+        public IActionResult AddStore([FromBody] StoreForUser newStore)
         {
-            var maxId = _context.Stores.Any() ? _context.Stores.Max(s => s.Id) : 0;
-            var entity = new StoreEntity
-            {
-                Id = maxId + 1,
-                Name = newStore.Name,
-                PhoneNumber = newStore.PhoneNumber,
-                MenuUrl = newStore.MenuUrl
-            };
-
-            _context.Stores.Add(entity);
-            _context.SaveChanges();
-
-            var storeForReturn = new Store
-            {
-                Id = entity.Id,
-                Name = entity.Name,
-                PhoneNumber = entity.PhoneNumber,
-                MenuUrl = entity.MenuUrl
-            };
-
-            return CreatedAtAction(nameof(GetStore), new { id = entity.Id }, storeForReturn);
+            var storeForReturn = _service.AddStore(newStore);
+            return CreatedAtAction(nameof(GetStore), new { id = storeForReturn.Id }, storeForReturn);
         }
     }
 }
